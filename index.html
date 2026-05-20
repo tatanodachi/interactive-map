@@ -444,7 +444,7 @@
         }
 
         function getEconomyColor(income) {
-            return income >= 14 ? '#8C7A5E' : income >= 10 ? '#AFA189' : income >= 7 ? '#C8BEAC' : '#E1DCD3';
+            return income >= 500 ? '#8C7A5E' : income >= 300 ? '#AFA189' : income >= 100 ? '#C8BEAC' : '#E1DCD3';
         }
 
         function getPopulationColor(population) {
@@ -512,10 +512,10 @@
                 legendPanel.style.display = 'block';
                 legendPanel.innerHTML = `
                     <div class="legend-title">Avg. Income (IDR/mo)</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#8C7A5E;"></div>> 14 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#AFA189;"></div>10 - 14 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#C8BEAC;"></div>7 - 10 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#E1DCD3;"></div>< 7 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#8C7A5E;"></div>> 500 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#AFA189;"></div>300 - 500 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#C8BEAC;"></div>100 - 300 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#E1DCD3;"></div>< 100 Million</div>
                 `;
             }
         }
