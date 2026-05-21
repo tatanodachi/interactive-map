@@ -427,7 +427,7 @@
             { id: "ju", name: "North Jakarta", query: "Jakarta Utara, Indonesia", group: "DKI Jakarta", population: 1822156, density: 12378, income: 392 },
             { id: "js", name: "South Jakarta", query: "Jakarta Selatan, Indonesia", group: "DKI Jakarta", population: 2207857, density: 15233, income: 409 },
             { id: "jb", name: "West Jakarta", query: "Jakarta Barat, Indonesia", group: "DKI Jakarta", population: 2494110, density: 19953, income: 269 },
-            { id: "jt", name: "East Jakarta", query: "Jakarta Timur, Indonesia", group: "DKI Jakarta", population: 3083988, density: 16622, income: 218 },
+            { id: "jt", name: "East Jakarta", query: "Jakarta Timur, Indonesia", group: "DKI Jakarta", population: 3083988, density: 16622, income: 218, defaultOff: true },
             { id: "ts", name: "South Tangerang", query: "Tangerang Selatan, Indonesia", group: "Banten", population: 1405040, density: 8523, income: 85, defaultOff: true },
             { id: "tg", name: "Tangerang City", query: "Kota Tangerang, Indonesia", group: "Banten", population: 1979290, density: 11098, income: 122 },
             { id: "tgr", name: "Tangerang Regency", query: "Kabupaten Tangerang, Indonesia", group: "Banten", population: 3468940, density: 3373, income: 58, defaultOff: true },
@@ -452,6 +452,7 @@
             return income >= 500 ? '#8C7A5E' : income >= 300 ? '#AFA189' : income >= 100 ? '#C8BEAC' : '#E1DCD3';
         }
 
+        // Custom Terracotta Gradient for Total Population view
         function getPopulationColor(population) {
             return population >= 3000000 ? '#7C3A21' :  
                    population >= 2000000 ? '#A95C3E' :  
@@ -733,7 +734,8 @@
             // DYNAMIC AUTOFIT VIEW (Strict boundary validation to prevent NaN projection errors)
             const loadedLayers = Object.values(regionLayers).filter(layer => {
                 try {
-                    return layer && typeof layer.getBounds === 'function' && layer.getBounds().isValid();
+                    // FIX: We now check "map.hasLayer(layer)" to ensure we only fit coordinates of the active/selected regions!
+                    return layer && map.hasLayer(layer) && typeof layer.getBounds === 'function' && layer.getBounds().isValid();
                 } catch (e) {
                     return false;
                 }
@@ -841,6 +843,7 @@
             }
         }
 
+        // Dynamic line render
         function onMeasureMove(e) {
             if (measurePoints.length === 1) {
                 dynamicLine.setLatLngs([measurePoints[0], e.latlng]);
