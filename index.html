@@ -29,7 +29,7 @@
             z-index: 1;
         }
 
-        /* Cinematic Map Vignette */
+        /* Cinematic Vignette Effect */
         .vignette {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -38,7 +38,7 @@
             z-index: 999;
         }
 
-        /* Kustomisasi Tooltip & Popup */
+        /* Tooltip & Popup Customization */
         .leaflet-tooltip.custom-tooltip, .leaflet-popup-content-wrapper {
             background-color: rgba(239, 235, 231, 0.95);
             backdrop-filter: blur(8px);
@@ -66,7 +66,7 @@
             background-color: rgba(239, 235, 231, 0.95);
         }
         
-        /* Warna panah tooltip */
+        /* Tooltip arrow colors */
         .leaflet-tooltip.custom-tooltip.leaflet-tooltip-top:before { border-top-color: rgba(239, 235, 231, 0.95); }
         .leaflet-tooltip.custom-tooltip.leaflet-tooltip-bottom:before { border-bottom-color: rgba(239, 235, 231, 0.95); }
         .leaflet-tooltip.custom-tooltip.leaflet-tooltip-left:before { border-left-color: rgba(239, 235, 231, 0.95); }
@@ -77,7 +77,7 @@
             to { opacity: 1; }
         }
 
-        /* Hover Path Transition */
+        /* Boundary Hover Transition */
         path.leaflet-interactive {
             transition: fill-opacity 0.3s ease, stroke-width 0.3s ease;
         }
@@ -86,12 +86,12 @@
             outline: none;
         }
 
-        /* Disable region interactivity when measuring */
+        /* Disable region interaction during measurement */
         .map-measuring .region-polygon {
             pointer-events: none !important;
         }
 
-        /* Panel Status */
+        /* Loading Status Panel */
         .status-panel {
             position: absolute;
             top: 20px;
@@ -126,7 +126,7 @@
             50% { opacity: 1; }
         }
 
-        /* Control Panel */
+        /* Main Control Panel */
         .control-panel {
             position: absolute;
             top: 20px;
@@ -143,7 +143,7 @@
             min-width: 220px;
         }
 
-        /* View Dropdown Styling */
+        /* Data Dropdown Styling */
         .view-dropdown {
             width: 100%;
             padding: 8px 12px;
@@ -170,7 +170,7 @@
             border-color: rgba(155, 139, 112, 0.8);
         }
 
-        /* Legend Styling */
+        /* Map Legend Styling */
         .map-legend {
             margin-top: 15px;
             padding-top: 12px;
@@ -207,12 +207,12 @@
             padding-right: 5px;
         }
 
-        /* Custom scrollbar */
+        /* Scrollbar Customization */
         #region-list::-webkit-scrollbar { width: 4px; }
         #region-list::-webkit-scrollbar-track { background: rgba(216, 216, 216, 0.3); border-radius: 4px; }
         #region-list::-webkit-scrollbar-thumb { background: #9B8B70; border-radius: 4px; }
 
-        /* Header Grup */
+        /* Region Group Header Styling */
         .group-header {
             display: flex;
             justify-content: space-between;
@@ -224,7 +224,7 @@
             margin: 15px 0 8px 0;
             letter-spacing: 0.05em;
             border-bottom: 1px dashed rgba(216, 216, 216, 0.8);
-            padding-bottom: 4px;
+            padding: 0 8px 4px 8px; 
             cursor: pointer;
         }
 
@@ -255,7 +255,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            padding: 6px 8px 6px 20px;
+            padding: 6px 8px 6px 20px; 
             border-radius: 6px;
             font-size: 13px;
             color: #4C4A4B;
@@ -267,13 +267,14 @@
             background-color: rgba(155, 139, 112, 0.15);
         }
 
-        /* Toggle Switch */
+        /* Toggle Switch (Switch) Design */
         .switch {
             position: relative;
             display: inline-block;
             width: 32px;
             height: 18px;
             flex-shrink: 0;
+            margin-left: auto; 
         }
         .switch input { opacity: 0; width: 0; height: 0; }
 
@@ -297,7 +298,7 @@
 
         .loading-text { font-size: 11px; color: #9B8B70; font-style: italic; }
 
-        /* Measure Tool */
+        /* Measurement Tool Button Design */
         .measure-btn {
             position: absolute;
             bottom: 30px;
@@ -345,7 +346,7 @@
         }
         .leaflet-tooltip.measure-tooltip::before { display: none; }
 
-        /* Breathing Animation for Proximity Rings */
+        /* Breathing Animation on POI Proximity Rings */
         @keyframes breathePulse {
             0% { opacity: 0.4; }
             100% { opacity: 1; }
@@ -358,19 +359,19 @@
 
     <div class="vignette"></div>
 
-    <!-- Panel Status -->
+    <!-- Map Status Panel -->
     <div id="status-panel" class="status-panel">
         <span id="status-dot" class="status-dot"></span>
-        <span id="status-text">Loading region boundaries...</span>
+        <span id="status-text">Loading boundaries...</span>
     </div>
 
-    <!-- Panel Kontrol -->
+    <!-- Side Control Panel -->
     <div id="control-panel" class="control-panel">
         <select id="view-dropdown" class="view-dropdown">
             <option value="admin">Administrative Regions</option>
             <option value="population">Total Population</option>
             <option value="density">Population Density</option>
-            <option value="economy">Economic Profile</option>
+            <option value="economy">Economic Profile (GDRP)</option>
         </select>
         
         <div id="region-list"></div>
@@ -378,7 +379,7 @@
         <div id="choropleth-legend" class="map-legend"></div>
     </div>
 
-    <!-- Floating Action Button untuk Measurement Tool -->
+    <!-- Floating Action Button for Measurement Tool -->
     <div id="measure-btn" class="measure-btn" title="Measure Distance">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="5" cy="19" r="2"></circle>
@@ -393,22 +394,24 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // 1. Inisialisasi Peta
+        // 1. Initialize Greater Jakarta Map
         const map = L.map('map', { zoomControl: false }).setView([-6.2400, 106.8300], 11);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+        // Custom Z-Index Layer Panes Setup
         map.createPane('ringsPane');
         map.getPane('ringsPane').style.zIndex = 410;
         
         map.createPane('markersPane');
         map.getPane('markersPane').style.zIndex = 420;
 
+        // Minimalist Base Tile Layer without labels
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
         }).addTo(map);
 
-        // Data & State
+        // Control Panel Elements
         const statusPanel = document.getElementById('status-panel');
         const statusText = document.getElementById('status-text');
         const statusDot = document.getElementById('status-dot');
@@ -417,19 +420,21 @@
         let currentViewMode = 'admin';
         let isMeasuring = false;
 
+        // Demographics & Economic estimates for Greater Jakarta Regions (Jabodetabek)
+        // defaultOff: true is configured for South Tangerang, Tangerang Regency, and all West Java locations.
         const targetRegions = [
             { id: "jp", name: "Central Jakarta", query: "Jakarta Pusat, Indonesia", group: "DKI Jakarta", population: 1032236, density: 21699, income: 949 },
             { id: "ju", name: "North Jakarta", query: "Jakarta Utara, Indonesia", group: "DKI Jakarta", population: 1822156, density: 12378, income: 392 },
             { id: "js", name: "South Jakarta", query: "Jakarta Selatan, Indonesia", group: "DKI Jakarta", population: 2207857, density: 15233, income: 409 },
             { id: "jb", name: "West Jakarta", query: "Jakarta Barat, Indonesia", group: "DKI Jakarta", population: 2494110, density: 19953, income: 269 },
             { id: "jt", name: "East Jakarta", query: "Jakarta Timur, Indonesia", group: "DKI Jakarta", population: 3083988, density: 16622, income: 218 },
-            { id: "ts", name: "South Tangerang", query: "Tangerang Selatan, Indonesia", group: "Banten", population: 1405040, density: 8523, income: 85 },
+            { id: "ts", name: "South Tangerang", query: "Tangerang Selatan, Indonesia", group: "Banten", population: 1405040, density: 8523, income: 85, defaultOff: true },
             { id: "tg", name: "Tangerang City", query: "Kota Tangerang, Indonesia", group: "Banten", population: 1979290, density: 11098, income: 122 },
-            { id: "tgr", name: "Tangerang Regency", query: "Kabupaten Tangerang, Indonesia", group: "Banten", population: 3468940, density: 3373, income: 58 },
-            { id: "bk", name: "Bekasi", query: "Kota Bekasi, Indonesia", group: "West Java", population: 2648300, density: 12431, income: 52 },
-            { id: "dp", name: "Depok", query: "Kota Depok, Indonesia", group: "West Java", population: 2168000, density: 10845, income: 46 },
-            { id: "bg", name: "Bogor City", query: "Kota Bogor, Indonesia", group: "West Java", population: 1083800, density: 9731, income: 60 },
-            { id: "bgr", name: "Bogor Regency", query: "Kabupaten Bogor, Indonesia", group: "West Java", population: 5721600, density: 1912, income: 58 }
+            { id: "tgr", name: "Tangerang Regency", query: "Kabupaten Tangerang, Indonesia", group: "Banten", population: 3468940, density: 3373, income: 58, defaultOff: true },
+            { id: "bk", name: "Bekasi City", query: "Kota Bekasi, Indonesia", group: "West Java", population: 2648300, density: 12431, income: 52, defaultOff: true },
+            { id: "dp", name: "Depok City", query: "Kota Depok, Indonesia", group: "West Java", population: 2168000, density: 10845, income: 46, defaultOff: true },
+            { id: "bg", name: "Bogor City", query: "Kota Bogor, Indonesia", group: "West Java", population: 1083800, density: 9731, income: 60, defaultOff: true },
+            { id: "bgr", name: "Bogor Regency", query: "Kabupaten Bogor, Indonesia", group: "West Java", population: 5721600, density: 1912, income: 58, defaultOff: true }
         ];
 
         const regionLayers = {};
@@ -438,7 +443,7 @@
         const hoverTooltip = L.tooltip({ className: 'custom-tooltip', direction: 'top', offset: [0, -10] });
         let hoverTimeout, hoverIntentTimeout, currentMouseLatLng = null;
 
-        // Visual Data Helpers
+        // Visual Data Color Scale Helpers
         function getDensityColor(density) {
             return density > 15000 ? '#134433' : density > 10000 ? '#1C6048' : density > 5000 ? '#41856B' : '#99B6AA';
         }
@@ -448,19 +453,21 @@
         }
 
         function getPopulationColor(population) {
-            return population >= 3000000 ? '#7C3A21' :  // Dark Terracotta
-                   population >= 2000000 ? '#A95C3E' :  // Medium Terracotta
-                   population >= 1500000 ? '#D08C70' :  // Light Terracotta
-                                           '#E8C2B3';   // Pale Terracotta
+            return population >= 3000000 ? '#7C3A21' :  
+                   population >= 2000000 ? '#A95C3E' :  
+                   population >= 1500000 ? '#D08C70' :  
+                                           '#E8C2B3';   
         }
 
+        // Popup & Tooltip Content Formatter
         function getTooltipContent(region) {
             if (currentViewMode === 'admin') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">${region.group}</span>`;
             if (currentViewMode === 'population') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Total: ${(region.population / 1000000).toFixed(1)} Million People</span>`;
-            if (currentViewMode === 'density') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">${region.density.toLocaleString()} people / km²</span>`;
-            return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Est. Income: Rp ${region.income}M / month</span>`;
+            if (currentViewMode === 'density') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">${region.density.toLocaleString('en-US')} people / km²</span>`;
+            return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Est. GDRP: IDR ${region.income}B / year</span>`;
         }
 
+        // Dynamic Polygon Path Styling Function
         function applyLayerStyle(layer, regionId, isHovered) {
             const region = regionDataMap[regionId];
             if (!region) return;
@@ -483,7 +490,7 @@
             }
         }
 
-        // View Mode logic
+        // View Mode & Legend Sync Controller
         const viewDropdown = document.getElementById('view-dropdown');
         const legendPanel = document.getElementById('choropleth-legend');
 
@@ -494,28 +501,28 @@
                 legendPanel.style.display = 'block';
                 legendPanel.innerHTML = `
                     <div class="legend-title">Total Population</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#7C3A21;"></div>> 3 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#A95C3E;"></div>2 - 3 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#D08C70;"></div>1.5 - 2 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#E8C2B3;"></div>< 1.5 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#7C3A21;"></div>&gt; 3.0 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#A95C3E;"></div>2.0 - 3.0 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#D08C70;"></div>1.5 - 2.0 Million</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#E8C2B3;"></div>&lt; 1.5 Million</div>
                 `;
             } else if (currentViewMode === 'density') {
                 legendPanel.style.display = 'block';
                 legendPanel.innerHTML = `
                     <div class="legend-title">People / km²</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#134433;"></div>> 15,000</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#134433;"></div>&gt; 15,000</div>
                     <div class="legend-item"><div class="legend-color" style="background:#1C6048;"></div>10,000 - 15,000</div>
                     <div class="legend-item"><div class="legend-color" style="background:#41856B;"></div>5,000 - 10,000</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#99B6AA;"></div>< 5,000</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#99B6AA;"></div>&lt; 5,000</div>
                 `;
             } else if (currentViewMode === 'economy') {
                 legendPanel.style.display = 'block';
                 legendPanel.innerHTML = `
-                    <div class="legend-title">Avg. Income (IDR/mo)</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#8C7A5E;"></div>> 500 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#AFA189;"></div>300 - 500 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#C8BEAC;"></div>100 - 300 Million</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#E1DCD3;"></div>< 100 Million</div>
+                    <div class="legend-title">Estimated GDRP (IDR/year)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#8C7A5E;"></div>&gt; 500 Billion</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#AFA189;"></div>300 - 500 Billion</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#C8BEAC;"></div>100 - 300 Billion</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#E1DCD3;"></div>&lt; 100 Billion</div>
                 `;
             }
         }
@@ -533,7 +540,7 @@
 
         viewDropdown.addEventListener('change', (e) => updateViewMode(e.target.value));
 
-        // UI Builder & API Fetch
+        // Dynamic Sidebar Toggles Builder
         function initToggleUI() {
             const groups = {};
             targetRegions.forEach(region => {
@@ -555,10 +562,13 @@
                 groupToggleLabel.className = 'switch group-switch';
                 groupToggleLabel.addEventListener('click', (e) => e.stopPropagation());
                 
+                // Determine group default check state. If all children are off by default, uncheck group toggle.
+                const groupDefaultChecked = groups[groupName].every(region => !region.defaultOff);
+
                 const groupToggleInput = document.createElement('input');
                 groupToggleInput.type = 'checkbox';
                 groupToggleInput.id = `group-toggle-${safeGroupName}`;
-                groupToggleInput.checked = true; 
+                groupToggleInput.checked = groupDefaultChecked; 
                 groupToggleInput.disabled = true;
                 
                 const groupSliderSpan = document.createElement('span');
@@ -602,7 +612,7 @@
                     const toggleInput = document.createElement('input');
                     toggleInput.type = 'checkbox';
                     toggleInput.id = `toggle-${region.id}`;
-                    toggleInput.checked = true;
+                    toggleInput.checked = !region.defaultOff; // Dynamic checked state on start
                     toggleInput.disabled = true;
                     childCheckboxes.push(toggleInput);
                     
@@ -651,6 +661,7 @@
             }
         }
 
+        // Asynchronously fetch and map regional polygon boundaries (Prevent API Throttling)
         async function loadRegionBorders() {
             initToggleUI();
             let loadedCount = 0;
@@ -674,9 +685,11 @@
                             clearTimeout(hoverIntentTimeout);
                             clearTimeout(hoverTimeout);
 
+                            // Hover Intent 0.5s Delay
                             hoverIntentTimeout = setTimeout(() => {
                                 if (currentMouseLatLng) {
                                     hoverTooltip.setLatLng(currentMouseLatLng).setContent(getTooltipContent(regionDataMap[region.id])).addTo(map);
+                                    // Automatic dismiss after 1 second
                                     hoverTimeout = setTimeout(() => {
                                         if (map.hasLayer(hoverTooltip)) map.removeLayer(hoverTooltip);
                                     }, 1000);
@@ -697,13 +710,14 @@
                         regionLayers[region.id] = layer;
 
                         const toggleInput = document.getElementById(`toggle-${region.id}`);
+                        // Only add loaded layers to map if checked by default
                         if (toggleInput.checked) layer.addTo(map);
                         
                         toggleInput.disabled = false;
                         document.getElementById(`load-${region.id}`).style.display = 'none';
                     }
                 } catch (error) {
-                    console.error(`Failed: ${region.name}`, error);
+                    console.error(`Failed loading: ${region.name}`, error);
                     document.getElementById(`load-${region.id}`).textContent = '(failed)';
                     document.getElementById(`load-${region.id}`).style.color = '#ef4444';
                 }
@@ -716,6 +730,27 @@
             statusDot.style.backgroundColor = '#1C6048';
             statusText.textContent = "Region boundaries successfully loaded";
             
+            // DYNAMIC AUTOFIT VIEW (Strict boundary validation to prevent NaN projection errors)
+            const loadedLayers = Object.values(regionLayers).filter(layer => {
+                try {
+                    return layer && typeof layer.getBounds === 'function' && layer.getBounds().isValid();
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            if (loadedLayers.length > 0) {
+                const boundaryGroup = L.featureGroup(loadedLayers);
+                const bounds = boundaryGroup.getBounds();
+                if (bounds && typeof bounds.isValid === 'function' && bounds.isValid()) {
+                    map.flyToBounds(bounds, {
+                        padding: [40, 40],
+                        duration: 1.8,
+                        easeLinearity: 0.25
+                    });
+                }
+            }
+
             document.querySelectorAll('.group-switch input').forEach(input => input.disabled = false);
             setTimeout(() => {
                 statusPanel.style.opacity = '0';
@@ -725,7 +760,7 @@
         
         loadRegionBorders();
 
-        // 3. Points of Interest
+        // 3. Points of Interest & Circular Proximity Rings
         const locations = [
             { name: "Pantai Indah Kapuk (North Jakarta)", lat: -6.1112, lon: 106.7404, color: "#4C4A4B" },
             { name: "Daan Mogot", lat: -6.1543, lon: 106.7398, color: "#1C6048", radii: [5000, 10000] }
@@ -736,9 +771,9 @@
                 loc.radii.sort((a, b) => b - a).forEach((radius, index) => {
                     const isOuter = index === 0; 
                     L.circle([loc.lat, loc.lon], {
-                        radius: radius, color: '#9B8B70', weight: isOuter ? 1.5 : 2.5,
+                        radius: radius, color: '#9B8B70', weight: isOuter ? 2 : 2.5,
                         dashArray: isOuter ? '4, 8' : '6, 6', fillColor: '#9B8B70',
-                        fillOpacity: isOuter ? 0.2 : 0.25, interactive: false, pane: 'ringsPane',
+                        fillOpacity: isOuter ? 0.3 : 0.35, interactive: false, pane: 'ringsPane',
                         className: isOuter ? 'breathe-outer' : 'breathe-inner'
                     }).addTo(map);
                 });
@@ -752,7 +787,7 @@
             marker.bindTooltip(`<b>${loc.name}</b>`, { direction: 'top', offset: [0, -10], className: 'custom-tooltip' });
         });
 
-        // 5. Measure Tool Logic
+        // 5. Custom Measurement Tool Logic
         let measurePoints = [], measureLine = null, dynamicLine = null, dynamicTooltip = null, measureMarkers = [];
         const measureBtn = document.getElementById('measure-btn');
         
