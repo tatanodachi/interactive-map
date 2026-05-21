@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
     <style>
+        /* Desain Kotak dan Ukuran Global */
+        body, html, .sidebar-container, .control-panel, .control-panel * {
+            box-sizing: border-box;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
@@ -126,12 +131,22 @@
             50% { opacity: 1; }
         }
 
-        /* Main Control Panel */
-        .control-panel {
+        /* Unified Sidebar Container on the Right Side */
+        .sidebar-container {
             position: absolute;
             top: 20px;
+            bottom: 20px;
             right: 20px;
+            width: 300px; /* Precise and shared width for both panels */
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none; /* Allow maps interactions in empty layout spaces */
+        }
+
+        /* Main Control Panel - Inherits Sidebar Width */
+        .control-panel {
             background-color: rgba(239, 235, 231, 0.75); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -139,8 +154,13 @@
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(30, 47, 49, 0.1);
-            max-width: 250px;
-            min-width: 220px;
+            width: 100%;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto; /* Re-enable click capture on panel elements */
+            flex: 1; /* Automatically expand to use remaining vertical room */
+            min-height: 0; /* Prevents overflow-y scroll breaking on layout shrinkages */
         }
 
         /* Data Dropdown Styling */
@@ -164,6 +184,7 @@
             background-position: right 12px center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
         .view-dropdown:hover {
             background-color: rgba(239, 235, 231, 0.9);
@@ -172,10 +193,10 @@
 
         /* Map Legend Styling */
         .map-legend {
-            margin-top: 15px;
-            padding-top: 12px;
-            border-top: 1px dashed rgba(216, 216, 216, 0.8);
+            margin-top: 10px;
+            padding-top: 0;
             display: none;
+            flex-shrink: 0;
         }
         .legend-title {
             font-size: 10px;
@@ -201,34 +222,56 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
+        /* Scrollable List Containers with dynamic viewport scaling safety bounds */
         #region-list {
-            max-height: 50vh;
-            overflow-y: auto;
-            padding-right: 5px;
+            max-height: 22vh; /* Slightly adjusted to accommodate flexible viewport shrinkages */
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding-right: 4px; 
+            margin-right: -4px;
+        }
+
+        #poi-list {
+            max-height: 16vh;
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding-right: 4px; 
+            margin-right: -4px;
         }
 
         /* Scrollbar Customization */
-        #region-list::-webkit-scrollbar { width: 4px; }
-        #region-list::-webkit-scrollbar-track { background: rgba(216, 216, 216, 0.3); border-radius: 4px; }
-        #region-list::-webkit-scrollbar-thumb { background: #9B8B70; border-radius: 4px; }
+        #region-list::-webkit-scrollbar,
+        #poi-list::-webkit-scrollbar { 
+            width: 5px; 
+        }
+        #region-list::-webkit-scrollbar-track,
+        #poi-list::-webkit-scrollbar-track { 
+            background: rgba(216, 216, 216, 0.2); 
+            border-radius: 4px; 
+        }
+        #region-list::-webkit-scrollbar-thumb,
+        #poi-list::-webkit-scrollbar-thumb { 
+            background: #9B8B70; 
+            border-radius: 4px; 
+        }
 
         /* Region Group Header Styling */
         .group-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13px;
+            font-size: 13px; 
             font-weight: 700;
             color: #9B8B70;
             text-transform: uppercase;
             margin: 15px 0 8px 0;
             letter-spacing: 0.05em;
             border-bottom: 1px dashed rgba(216, 216, 216, 0.8);
-            padding: 0 8px 4px 8px; 
+            padding: 0 0 4px 0; 
             cursor: pointer;
         }
 
-        .group-header:first-child { margin-top: 0; }
+        .group-header:first-child { margin-top: 0; } 
         .group-header-title { display: flex; align-items: center; gap: 6px; flex-grow: 1; }
 
         .chevron {
@@ -255,16 +298,50 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            padding: 6px 8px 6px 20px; 
+            padding: 6px 4px 6px 20px; /* --- UBAH PADDING KIRI MENJADI 20PX AGAR SEJAJAR DENGAN HEADER --- */
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 10px; 
             color: #4C4A4B;
             font-weight: 500;
             transition: background-color 0.2s ease;
             cursor: pointer;
+            width: 100%;
         }
         .region-item:hover {
             background-color: rgba(155, 139, 112, 0.15);
+        }
+
+        /* Points Of Interest Item Design */
+        .poi-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 4px 4px 4px 20px; /* Selaras dengan indentasi teks judul header POI (Chevron 14px + Gap 6px = 20px) */
+            border-radius: 6px;
+            font-size: 12px; 
+            color: #4C4A4B;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+        .poi-item:hover {
+            background-color: rgba(155, 139, 112, 0.15);
+        }
+        .poi-title-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+        }
+        .poi-desc {
+            font-size: 10px; 
+            color: #9B8B70;
+            font-weight: 400;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Toggle Switch (Switch) Design */
@@ -274,7 +351,7 @@
             width: 32px;
             height: 18px;
             flex-shrink: 0;
-            margin-left: auto; 
+            margin-left: 8px; 
         }
         .switch input { opacity: 0; width: 0; height: 0; }
 
@@ -298,10 +375,10 @@
 
         .loading-text { font-size: 11px; color: #9B8B70; font-style: italic; }
 
-        /* Measurement Tool Button Design */
+        /* Measurement Tool Button Design (Shifted up to accommodate bottom-left zoom controls) */
         .measure-btn {
             position: absolute;
-            bottom: 30px;
+            bottom: 110px;
             left: 20px;
             z-index: 1000;
             background-color: rgba(239, 235, 231, 0.95);
@@ -346,6 +423,102 @@
         }
         .leaflet-tooltip.measure-tooltip::before { display: none; }
 
+        /* Floating Age-Sex Pyramid Panel - Refactored for Flex Sidebar Integration */
+        .pyramid-panel {
+            background-color: rgba(239, 235, 231, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(155, 139, 112, 0.3);
+            padding: 14px 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(30, 47, 49, 0.1);
+            width: 100%; /* Spans full sidebar container width of 300px */
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto; /* Allow interactions */
+            flex-shrink: 0; /* Keep demographic ratios constant and uncompressed */
+        }
+        .pyramid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .pyramid-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .pyramid-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #9B8B70;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .pyramid-subtitle {
+            font-size: 9px;
+            font-weight: 500;
+            color: #4C4A4B;
+        }
+        .pyramid-content {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            animation: fadeInTooltip 0.3s ease;
+        }
+        .pyramid-row {
+            display: flex;
+            align-items: center;
+            height: 14px;
+        }
+        .pyramid-bar-container {
+            flex: 1;
+            height: 100%;
+            background-color: rgba(155, 139, 112, 0.08);
+            border-radius: 2px;
+            position: relative;
+        }
+        .pyramid-bar-container.male {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .pyramid-bar-container.female {
+            display: flex;
+            justify-content: flex-start;
+        }
+        .pyramid-bar {
+            height: 100%;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 2px;
+            cursor: help;
+        }
+        .pyramid-bar.male {
+            background-color: #1C6048; /* Emerald green theme to match DKI */
+        }
+        .pyramid-bar.female {
+            background-color: #A95C3E; /* Terracotta theme */
+        }
+        .pyramid-cohort {
+            width: 54px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #4C4A4B;
+        }
+        .pyramid-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            font-weight: 700;
+            color: #9B8B70;
+            margin-top: 10px;
+            border-top: 1px dashed rgba(216, 216, 216, 0.8);
+            padding-top: 8px;
+        }
+
         /* Breathing Animation on POI Proximity Rings */
         @keyframes breathePulse {
             0% { opacity: 0.4; }
@@ -365,18 +538,54 @@
         <span id="status-text">Loading boundaries...</span>
     </div>
 
-    <!-- Side Control Panel -->
-    <div id="control-panel" class="control-panel">
-        <select id="view-dropdown" class="view-dropdown">
-            <option value="admin">Administrative Regions</option>
-            <option value="population">Total Population</option>
-            <option value="density">Population Density</option>
-            <option value="economy">Economic Profile (GDRP)</option>
-        </select>
-        
-        <div id="region-list"></div>
-        
-        <div id="choropleth-legend" class="map-legend"></div>
+    <!-- Unified Sidebar Container -->
+    <div class="sidebar-container">
+        <!-- Side Control Panel -->
+        <div id="control-panel" class="control-panel">
+            <select id="view-dropdown" class="view-dropdown">
+                <option value="admin">Administrative Regions</option>
+                <option value="population">Total Population</option>
+                <option value="density">Population Density</option>
+                <option value="economy">Economic Profile (GDRP)</option>
+                <option value="commuter">Commuter Flow (% to Core)</option>
+                <option value="age">Age Demographics (Median Age)</option>
+            </select>
+            
+            <div style="font-size: 12px; font-weight: 700; color: #9B8B70; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0 4px 0; border-bottom: 1px dashed rgba(216, 216, 216, 0.8); margin-bottom: 8px;">Regions</div>
+            <div id="region-list"></div>
+
+            <!-- Advanced Collapsible POI List Panel -->
+            <div style="border-top: 1px dashed rgba(216, 216, 216, 0.8); border-bottom: 1px dashed rgba(216, 216, 216, 0.8); padding-top: 15px; padding-bottom: 10px; margin-top: 15px; margin-bottom: 5px;">
+                <div class="poi-section-header" style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: #9B8B70; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 4px 4px 0; border-bottom: 1px dashed rgba(216, 216, 216, 0.8); margin-bottom: 8px; cursor: pointer;">
+                    <div class="group-header-title" id="poi-header-title" style="display: flex; align-items: center; gap: 6px; flex-grow: 1;">
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <span>Points of Interest</span>
+                    </div>
+                    <label class="switch group-switch" style="margin-left: auto;" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="toggle-all-poi" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="poi-list" class="group-content" style="display: block;"></div>
+            </div>
+            
+            <div id="choropleth-legend" class="map-legend"></div>
+        </div>
+
+        <!-- Collapsible Floating Age-Sex Pyramid Panel -->
+        <!-- Default State: "pyramid-content" diatur ke "display: none" secara inisial karena status panel aktif di awal -->
+        <div id="pyramid-panel" class="pyramid-panel">
+            <div class="pyramid-header" id="pyramid-header">
+                <div class="pyramid-title-wrapper">
+                    <span class="pyramid-title">Demographics Pyramid</span>
+                    <span class="pyramid-subtitle">Sum of active regions: <b id="pyramid-total-pop">0</b></span>
+                </div>
+                <svg class="chevron collapsed" id="pyramid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-left: 8px; transition: transform 0.3s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="pyramid-content" id="pyramid-content" style="display: none;">
+                <!-- Programmatically populated rows will go here -->
+            </div>
+        </div>
     </div>
 
     <!-- Floating Action Button for Measurement Tool -->
@@ -394,9 +603,27 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
+        // ==========================================================================
+        // Sistem Validasi Koordinat dan Geometri Peta (Mengatasi Error NaN)
+        // ==========================================================================
+        function isLatLngValid(latlng) {
+            if (!latlng) return false;
+            const lat = typeof latlng.lat !== 'undefined' ? latlng.lat : latlng[0];
+            const lng = typeof latlng.lng !== 'undefined' ? latlng.lng : latlng[1];
+            return typeof lat === 'number' && !isNaN(lat) && typeof lng === 'number' && !isNaN(lng) && isFinite(lat) && isFinite(lng);
+        }
+
+        // Cek Keabsahan Bounds
+        function isBoundsValid(bounds) {
+            if (!bounds || typeof bounds.isValid !== 'function' || !bounds.isValid()) return false;
+            const sw = bounds.getSouthWest();
+            const ne = bounds.getNorthEast();
+            return isLatLngValid(sw) && isLatLngValid(ne);
+        }
+
         // 1. Initialize Greater Jakarta Map
         const map = L.map('map', { zoomControl: false }).setView([-6.2400, 106.8300], 11);
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
         // Custom Z-Index Layer Panes Setup
         map.createPane('ringsPane');
@@ -421,21 +648,54 @@
         let isMeasuring = false;
 
         // Demographics & Economic estimates for Greater Jakarta Regions (Jabodetabek)
-        // defaultOff: true is configured for South Tangerang, Tangerang Regency, and all West Java locations.
         const targetRegions = [
-            { id: "jp", name: "Central Jakarta", query: "Jakarta Pusat, Indonesia", group: "DKI Jakarta", population: 1032236, density: 21699, income: 949 },
-            { id: "ju", name: "North Jakarta", query: "Jakarta Utara, Indonesia", group: "DKI Jakarta", population: 1822156, density: 12378, income: 392 },
-            { id: "js", name: "South Jakarta", query: "Jakarta Selatan, Indonesia", group: "DKI Jakarta", population: 2207857, density: 15233, income: 409 },
-            { id: "jb", name: "West Jakarta", query: "Jakarta Barat, Indonesia", group: "DKI Jakarta", population: 2494110, density: 19953, income: 269 },
-            { id: "jt", name: "East Jakarta", query: "Jakarta Timur, Indonesia", group: "DKI Jakarta", population: 3083988, density: 16622, income: 218, defaultOff: true },
-            { id: "ts", name: "South Tangerang", query: "Tangerang Selatan, Indonesia", group: "Banten", population: 1405040, density: 8523, income: 85, defaultOff: true },
-            { id: "tg", name: "Tangerang City", query: "Kota Tangerang, Indonesia", group: "Banten", population: 1979290, density: 11098, income: 122 },
-            { id: "tgr", name: "Tangerang Regency", query: "Kabupaten Tangerang, Indonesia", group: "Banten", population: 3468940, density: 3373, income: 58, defaultOff: true },
-            { id: "bk", name: "Bekasi City", query: "Kota Bekasi, Indonesia", group: "West Java", population: 2648300, density: 12431, income: 52, defaultOff: true },
-            { id: "dp", name: "Depok City", query: "Kota Depok, Indonesia", group: "West Java", population: 2168000, density: 10845, income: 46, defaultOff: true },
-            { id: "bg", name: "Bogor City", query: "Kota Bogor, Indonesia", group: "West Java", population: 1083800, density: 9731, income: 60, defaultOff: true },
-            { id: "bgr", name: "Bogor Regency", query: "Kabupaten Bogor, Indonesia", group: "West Java", population: 5721600, density: 1912, income: 58, defaultOff: true }
+            { id: "jp", name: "Central Jakarta", query: "Jakarta Pusat, Indonesia", group: "DKI Jakarta", population: 1032236, density: 21699, income: 949, commuter: 75, medianAge: 31 },
+            { id: "ju", name: "North Jakarta", query: "Jakarta Utara, Indonesia", group: "DKI Jakarta", population: 1822156, density: 12378, income: 392, commuter: 42, medianAge: 29 },
+            { id: "js", name: "South Jakarta", query: "Jakarta Selatan, Indonesia", group: "DKI Jakarta", population: 2207857, density: 15233, income: 409, commuter: 65, medianAge: 32 },
+            { id: "jb", name: "West Jakarta", query: "Jakarta Barat, Indonesia", group: "DKI Jakarta", population: 2494110, density: 19953, income: 269, commuter: 58, medianAge: 30 },
+            { id: "jt", name: "East Jakarta", query: "Jakarta Timur, Indonesia", group: "DKI Jakarta", population: 3083988, density: 16622, income: 218, commuter: 62, defaultOff: true, medianAge: 31 },
+            { id: "ts", name: "South Tangerang", query: "Tangerang Selatan, Indonesia", group: "Banten", population: 1405040, density: 8523, income: 85, commuter: 68, defaultOff: true, medianAge: 28 },
+            { id: "tg", name: "Tangerang City", query: "Kota Tangerang, Indonesia", group: "Banten", population: 1979290, density: 11098, income: 122, commuter: 48, medianAge: 29 },
+            { id: "tgr", name: "Tangerang Regency", query: "Kabupaten Tangerang, Indonesia", group: "Banten", population: 3468940, density: 3373, income: 58, commuter: 32, defaultOff: true, medianAge: 27 },
+            { id: "bk", name: "Bekasi City", query: "Kota Bekasi, Indonesia", group: "West Java", population: 2648300, density: 12431, income: 52, commuter: 60, defaultOff: true, medianAge: 28 },
+            { id: "dp", name: "Depok City", query: "Kota Depok, Indonesia", group: "West Java", population: 2168000, density: 10845, income: 46, commuter: 67, defaultOff: true, medianAge: 29 },
+            { id: "bg", name: "Bogor City", query: "Kota Bogor, Indonesia", group: "West Java", population: 1083800, density: 9731, income: 60, commuter: 38, defaultOff: true, medianAge: 29 },
+            { id: "bgr", name: "Bogor Regency", query: "Kabupaten Bogor, Indonesia", group: "West Java", population: 5721600, density: 1912, income: 58, commuter: 24, defaultOff: true, medianAge: 26 }
         ];
+
+        // Group definitions for Age cohorts
+        const ageCohorts = ["70+", "60-69", "50-59", "40-49", "30-39", "20-29", "10-19", "0-9"];
+
+        // Deterministic generation function to assign realistic Age-Sex distribution data per region based on median age
+        function populateAgeSexData() {
+            targetRegions.forEach(region => {
+                const male = [];
+                const female = [];
+                
+                // Build an offset based on the group order
+                ageCohorts.forEach((cohort, index) => {
+                    const cohortAge = (7 - index) * 10 + 5; // e.g. 5, 15, 25, 35...
+                    const ageDiff = cohortAge - region.medianAge;
+                    
+                    // Gaussian bell-curve weighting
+                    const baseWeight = Math.exp(-Math.pow(ageDiff, 2) / 480) + 0.08;
+                    
+                    // Create subtle deterministic variety based on character code hashing
+                    const hash = (region.id.charCodeAt(0) + index) % 10;
+                    const maleVariance = 1 + (hash - 5) * 0.015;
+                    const femaleVariance = 1 + (4 - hash) * 0.015;
+
+                    male.push(baseWeight * maleVariance);
+                    female.push(baseWeight * femaleVariance);
+                });
+
+                // Normalize weights to match region.population precisely
+                const totalWeight = male.reduce((a, b) => a + b, 0) + female.reduce((a, b) => a + b, 0);
+                region.maleDistribution = male.map(w => Math.round((w / totalWeight) * region.population));
+                region.femaleDistribution = female.map(w => Math.round((w / totalWeight) * region.population));
+            });
+        }
+        populateAgeSexData();
 
         const regionLayers = {};
         const regionDataMap = {}; 
@@ -452,12 +712,27 @@
             return income >= 500 ? '#8C7A5E' : income >= 300 ? '#AFA189' : income >= 100 ? '#C8BEAC' : '#E1DCD3';
         }
 
-        // Custom Terracotta Gradient for Total Population view
         function getPopulationColor(population) {
-            return population >= 3000000 ? '#7C3A21' :  
-                   population >= 2000000 ? '#A95C3E' :  
-                   population >= 1500000 ? '#D08C70' :  
-                                           '#E8C2B3';   
+            return population >= 3000000 ? '#7C3A21' :  // Dark Terracotta
+                   population >= 2000000 ? '#A95C3E' :  // Medium Terracotta
+                   population >= 1500000 ? '#D08C70' :  // Light Terracotta
+                                           '#E8C2B3';   // Pale Terracotta
+        }
+
+        // Custom Deep Blue Gradient for Commuter Flow view
+        function getCommuterColor(rate) {
+            return rate > 60  ? '#1E3A8A' :  // Dark Blue
+                   rate > 45  ? '#3B82F6' :  // Medium Blue
+                   rate > 30  ? '#60A5FA' :  // Light Blue
+                                '#DBEAFE';   // Pale Blue
+        }
+
+        // Custom Purple/Violet Gradient for Age Demographics view
+        function getAgeColor(age) {
+            return age >= 31  ? '#581C87' :  // Deep Purple
+                   age >= 29  ? '#8B5CF6' :  // Medium Purple
+                   age >= 27  ? '#C084FC' :  // Light Purple
+                                '#F3E8FF';   // Pale Purple/Lavender
         }
 
         // Popup & Tooltip Content Formatter
@@ -465,6 +740,8 @@
             if (currentViewMode === 'admin') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">${region.group}</span>`;
             if (currentViewMode === 'population') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Total: ${(region.population / 1000000).toFixed(1)} Million People</span>`;
             if (currentViewMode === 'density') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">${region.density.toLocaleString('en-US')} people / km²</span>`;
+            if (currentViewMode === 'commuter') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Commuter Rate: ${region.commuter}%</span>`;
+            if (currentViewMode === 'age') return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Median Age: ${region.medianAge} Years</span>`;
             return `<b>${region.name}</b><br><span style="font-size:11px;color:#777;">Est. GDRP: IDR ${region.income}B / year</span>`;
         }
 
@@ -483,6 +760,8 @@
                 if (currentViewMode === 'density') fillColor = getDensityColor(region.density);
                 else if (currentViewMode === 'economy') fillColor = getEconomyColor(region.income);
                 else if (currentViewMode === 'population') fillColor = getPopulationColor(region.population);
+                else if (currentViewMode === 'commuter') fillColor = getCommuterColor(region.commuter);
+                else if (currentViewMode === 'age') fillColor = getAgeColor(region.medianAge);
                 
                 layer.setStyle({
                     color: '#EFEBE7', weight: isHovered ? 2.5 : 1.2,
@@ -525,6 +804,24 @@
                     <div class="legend-item"><div class="legend-color" style="background:#C8BEAC;"></div>100 - 300 Billion</div>
                     <div class="legend-item"><div class="legend-color" style="background:#E1DCD3;"></div>&lt; 100 Billion</div>
                 `;
+            } else if (currentViewMode === 'commuter') {
+                legendPanel.style.display = 'block';
+                legendPanel.innerHTML = `
+                    <div class="legend-title">Commuters to Core (%)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#1E3A8A;"></div>&gt; 60%</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#3B82F6;"></div>45% - 60%</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#60A5FA;"></div>30% - 45%</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#DBEAFE;"></div>&lt; 30%</div>
+                `;
+            } else if (currentViewMode === 'age') {
+                legendPanel.style.display = 'block';
+                legendPanel.innerHTML = `
+                    <div class="legend-title">Median Age (Years)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#581C87;"></div>&gt;= 31 Years</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#8B5CF6;"></div>29 - 30 Years</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#C084FC;"></div>27 - 28 Years</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#F3E8FF;"></div>&lt; 27 Years</div>
+                `;
             }
         }
 
@@ -540,6 +837,173 @@
         }
 
         viewDropdown.addEventListener('change', (e) => updateViewMode(e.target.value));
+
+        // ==========================================================================
+        // Logika Accordion: Saling Mengecualikan Panel Atas dan Bawah
+        // ==========================================================================
+        function expandPyramid() {
+            const content = document.getElementById('pyramid-content');
+            const chevron = document.getElementById('pyramid-chevron');
+            if (content) {
+                content.style.display = 'flex';
+                if (chevron) chevron.classList.remove('collapsed');
+            }
+        }
+
+        function collapsePyramid() {
+            const content = document.getElementById('pyramid-content');
+            const chevron = document.getElementById('pyramid-chevron');
+            if (content) {
+                content.style.display = 'none';
+                if (chevron) chevron.classList.add('collapsed');
+            }
+        }
+
+        function collapseAllControlGroups() {
+            // Melipat seluruh grup wilayah (Regions)
+            const regionContents = document.querySelectorAll('#region-list .group-content');
+            const regionChevrons = document.querySelectorAll('#region-list .chevron');
+            regionContents.forEach(el => el.style.display = 'none');
+            regionChevrons.forEach(el => el.classList.add('collapsed'));
+
+            // Melipat grup Points of Interest
+            const poiContent = document.getElementById('poi-list');
+            const poiChevron = document.querySelector('#poi-header-title .chevron');
+            if (poiContent) poiContent.style.display = 'none';
+            if (poiChevron) poiChevron.classList.add('collapsed');
+        }
+
+        // Re-calulates the combined age-sex demographics only for selected/active map regions
+        function updateDemographicsPyramid() {
+            const combinedMale = [0, 0, 0, 0, 0, 0, 0, 0];
+            const combinedFemale = [0, 0, 0, 0, 0, 0, 0, 0];
+            let activePopulationTotal = 0;
+
+            targetRegions.forEach(region => {
+                const toggleInput = document.getElementById(`toggle-${region.id}`);
+                // Verify layer is present and checked
+                if (toggleInput && toggleInput.checked && region.maleDistribution) {
+                    activePopulationTotal += region.population;
+                    for (let i = 0; i < 8; i++) {
+                        combinedMale[i] += region.maleDistribution[i];
+                        combinedFemale[i] += region.femaleDistribution[i];
+                    }
+                }
+            });
+
+            // Update Total active population count badge
+            document.getElementById('pyramid-total-pop').textContent = activePopulationTotal.toLocaleString('en-US');
+
+            // Update Population Share progress bar at the bottom
+            const absoluteTotalPop = targetRegions.reduce((sum, r) => sum + r.population, 0);
+            const percentOfTotal = absoluteTotalPop > 0 ? ((activePopulationTotal / absoluteTotalPop) * 100).toFixed(1) : '0.0';
+            
+            const pctElem = document.getElementById('pyramid-pop-pct');
+            const progressElem = document.getElementById('pyramid-pop-progress');
+            const fractionElem = document.getElementById('pyramid-pop-fraction');
+
+            if (pctElem) pctElem.textContent = `${percentOfTotal}%`;
+            if (progressElem) progressElem.style.width = `${percentOfTotal}%`;
+            if (fractionElem) {
+                fractionElem.textContent = `${(activePopulationTotal / 1000000).toFixed(2)}M / ${(absoluteTotalPop / 1000000).toFixed(1)}M`;
+            }
+
+            // Find maximum cohort value to map the width of demographic bars proportionally
+            const maxCohortValue = Math.max(...combinedMale, ...combinedFemale, 1);
+
+            // Re-render HTML demographic bars dynamically
+            for (let i = 0; i < 8; i++) {
+                const maleBar = document.getElementById('pyramid-m-bar-' + i);
+                const femaleBar = document.getElementById('pyramid-f-bar-' + i);
+
+                const mPercentOfMax = (combinedMale[i] / maxCohortValue) * 100;
+                const fPercentOfMax = (combinedFemale[i] / maxCohortValue) * 100;
+
+                const mPercentOfTotal = activePopulationTotal > 0 ? ((combinedMale[i] / activePopulationTotal) * 100).toFixed(1) : '0.0';
+                const fPercentOfTotal = activePopulationTotal > 0 ? ((combinedFemale[i] / activePopulationTotal) * 100).toFixed(1) : '0.0';
+
+                if (maleBar) {
+                    maleBar.style.width = mPercentOfMax + '%';
+                    maleBar.setAttribute('title', 'Male ' + ageCohorts[i] + ': ' + combinedMale[i].toLocaleString('en-US') + ' (' + mPercentOfTotal + '%)');
+                }
+                if (femaleBar) {
+                    femaleBar.style.width = fPercentOfMax + '%';
+                    femaleBar.setAttribute('title', 'Female ' + ageCohorts[i] + ': ' + combinedFemale[i].toLocaleString('en-US') + ' (' + fPercentOfTotal + '%)');
+                }
+            }
+        }
+
+        // Construct empty Age-Sex Pyramid framework on start
+        function initDemographicsPyramidUI() {
+            const container = document.getElementById('pyramid-content');
+            container.innerHTML = '';
+
+            ageCohorts.forEach((cohort, index) => {
+                const row = document.createElement('div');
+                row.className = 'pyramid-row';
+                row.innerHTML = `
+                    <div class="pyramid-bar-container male">
+                        <div id="pyramid-m-bar-${index}" class="pyramid-bar male" style="width: 0%;"></div>
+                    </div>
+                    <div class="pyramid-cohort">${cohort}</div>
+                    <div class="pyramid-bar-container female">
+                        <div id="pyramid-f-bar-${index}" class="pyramid-bar female" style="width: 0%;"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            // Append structured labels footer
+            const footer = document.createElement('div');
+            footer.className = 'pyramid-footer';
+            footer.innerHTML = `
+                <span style="color: #1C6048;">♂ Men</span>
+                <span>Cohort Age</span>
+                <span style="color: #A95C3E;">♀ Women</span>
+            `;
+            container.appendChild(footer);
+
+            // Append active population share progress line at the bottom
+            const popLineContainer = document.createElement('div');
+            popLineContainer.id = 'pyramid-total-line-container';
+            popLineContainer.style.marginTop = '12px';
+            popLineContainer.style.borderTop = '1px dashed rgba(216, 216, 216, 0.8)';
+            popLineContainer.style.paddingTop = '10px';
+            popLineContainer.style.display = 'flex';
+            popLineContainer.style.flexDirection = 'column';
+            popLineContainer.style.gap = '4px';
+            popLineContainer.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: #4C4A4B;">
+                    <span>ACTIVE POPULATION SHARE</span>
+                    <span id="pyramid-pop-pct" style="color: #9B8B70;">0%</span>
+                </div>
+                <div style="width: 100%; height: 6px; background-color: rgba(155, 139, 112, 0.1); border-radius: 3px; overflow: hidden; position: relative;">
+                    <div id="pyramid-pop-progress" style="width: 0%; height: 100%; background-color: #9B8B70; border-radius: 3px; transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                </div>
+                <div style="font-size: 9px; color: #9B8B70; display: flex; justify-content: space-between; font-weight: 500;">
+                    <span id="pyramid-pop-fraction">0 / 29.1M</span>
+                    <span>of Greater Jakarta</span>
+                </div>
+            `;
+            container.appendChild(popLineContainer);
+
+            // Event listener klik Piramida Demografi yang menerapkan logika Accordion
+            document.getElementById('pyramid-header').addEventListener('click', function() {
+                const content = document.getElementById('pyramid-content');
+                const chevron = document.getElementById('pyramid-chevron');
+                if (content.style.display === 'none') {
+                    // Membuka Piramida -> Melipat seluruh panel atas
+                    content.style.display = 'flex';
+                    chevron.classList.remove('collapsed');
+                    collapseAllControlGroups(); 
+                } else {
+                    // Melipat Piramida
+                    content.style.display = 'none';
+                    chevron.classList.add('collapsed');
+                }
+            });
+        }
+        initDemographicsPyramidUI();
 
         // Dynamic Sidebar Toggles Builder
         function initToggleUI() {
@@ -587,12 +1051,16 @@
                 groupContent.style.display = 'none'; 
                 regionListContainer.appendChild(groupContent);
 
+                // Event listener klik Grup Wilayah yang menerapkan logika Accordion
                 groupTitleContainer.addEventListener('click', () => {
                     const svg = groupHeader.querySelector('.chevron');
                     if (groupContent.style.display === 'none') {
+                        // Membuka Grup Wilayah -> Melipat Piramida
                         groupContent.style.display = 'block';
                         svg.classList.remove('collapsed');
+                        collapsePyramid(); 
                     } else {
+                        // Melipat Grup Wilayah
                         groupContent.style.display = 'none';
                         svg.classList.add('collapsed');
                     }
@@ -622,6 +1090,7 @@
                             e.target.checked ? regionLayers[region.id].addTo(map) : map.removeLayer(regionLayers[region.id]);
                         }
                         groupToggleInput.checked = childCheckboxes.every(chk => chk.checked);
+                        updateDemographicsPyramid(); // Re-calculate demographic sum on toggle
                     });
 
                     itemDiv.addEventListener('mouseenter', () => {
@@ -631,7 +1100,9 @@
                             applyLayerStyle(layer, region.id, true);
                             if (typeof layer.bringToFront === 'function') layer.bringToFront();
                             const bounds = layer.getBounds();
-                            hoverTooltip.setLatLng(bounds.getCenter()).setContent(getTooltipContent(regionDataMap[region.id])).addTo(map);
+                            if (isBoundsValid(bounds)) {
+                                hoverTooltip.setLatLng(bounds.getCenter()).setContent(getTooltipContent(regionDataMap[region.id])).addTo(map);
+                            }
                         }
                     });
 
@@ -673,49 +1144,54 @@
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(region.query)}&polygon_geojson=1&format=json`);
                     const data = await response.json();
                     
-                    if (data && data.length > 0) {
+                    if (data && data.length > 0 && data[0].geojson) {
                         const groupColor = region.group === "DKI Jakarta" ? "#1C6048" : region.group === "Banten" ? "#1E2f31" : "#9B8B70";
                         regionDataMap[region.id] = { ...region, groupColor: groupColor };
 
                         const layer = L.geoJSON(data[0].geojson, { className: 'region-polygon' });
-                        applyLayerStyle(layer, region.id, false);
+                        const bounds = layer.getBounds();
 
-                        layer.on('mouseover', function (e) {
-                            applyLayerStyle(this, region.id, true);
-                            currentMouseLatLng = e.latlng; 
-                            clearTimeout(hoverIntentTimeout);
-                            clearTimeout(hoverTimeout);
+                        // Safety coordinate validation prior to boundary plotting
+                        if (isBoundsValid(bounds)) {
+                            applyLayerStyle(layer, region.id, false);
 
-                            // Hover Intent 0.5s Delay
-                            hoverIntentTimeout = setTimeout(() => {
-                                if (currentMouseLatLng) {
-                                    hoverTooltip.setLatLng(currentMouseLatLng).setContent(getTooltipContent(regionDataMap[region.id])).addTo(map);
-                                    // Automatic dismiss after 1 second
-                                    hoverTimeout = setTimeout(() => {
-                                        if (map.hasLayer(hoverTooltip)) map.removeLayer(hoverTooltip);
-                                    }, 1000);
-                                }
-                            }, 500);
-                        });
+                            layer.on('mouseover', function (e) {
+                                applyLayerStyle(this, region.id, true);
+                                currentMouseLatLng = e.latlng; 
+                                clearTimeout(hoverIntentTimeout);
+                                clearTimeout(hoverTimeout);
 
-                        layer.on('mousemove', function (e) { currentMouseLatLng = e.latlng; });
+                                // Hover Intent 0.5s Delay
+                                hoverIntentTimeout = setTimeout(() => {
+                                    if (currentMouseLatLng && isLatLngValid(currentMouseLatLng)) {
+                                        hoverTooltip.setLatLng(currentMouseLatLng).setContent(getTooltipContent(regionDataMap[region.id])).addTo(map);
+                                        // Automatic dismiss after 1 second
+                                        hoverTimeout = setTimeout(() => {
+                                            if (map.hasLayer(hoverTooltip)) map.removeLayer(hoverTooltip);
+                                        }, 1000);
+                                    }
+                                }, 500);
+                            });
 
-                        layer.on('mouseout', function () {
-                            applyLayerStyle(this, region.id, false);
-                            clearTimeout(hoverIntentTimeout);
-                            clearTimeout(hoverTimeout);
-                            if (map.hasLayer(hoverTooltip)) map.removeLayer(hoverTooltip);
-                        });
-                        
-                        layer.bindPopup(getTooltipContent(regionDataMap[region.id]));
-                        regionLayers[region.id] = layer;
+                            layer.on('mousemove', function (e) { currentMouseLatLng = e.latlng; });
 
-                        const toggleInput = document.getElementById(`toggle-${region.id}`);
-                        // Only add loaded layers to map if checked by default
-                        if (toggleInput.checked) layer.addTo(map);
-                        
-                        toggleInput.disabled = false;
-                        document.getElementById(`load-${region.id}`).style.display = 'none';
+                            layer.on('mouseout', function () {
+                                applyLayerStyle(this, region.id, false);
+                                clearTimeout(hoverIntentTimeout);
+                                clearTimeout(hoverTimeout);
+                                if (map.hasLayer(hoverTooltip)) map.removeLayer(hoverTooltip);
+                            });
+                            
+                            layer.bindPopup(getTooltipContent(regionDataMap[region.id]));
+                            regionLayers[region.id] = layer;
+
+                            const toggleInput = document.getElementById(`toggle-${region.id}`);
+                            // Only add loaded layers to map if checked by default
+                            if (toggleInput.checked) layer.addTo(map);
+                            
+                            toggleInput.disabled = false;
+                            document.getElementById(`load-${region.id}`).style.display = 'none';
+                        }
                     }
                 } catch (error) {
                     console.error(`Failed loading: ${region.name}`, error);
@@ -734,8 +1210,8 @@
             // DYNAMIC AUTOFIT VIEW (Strict boundary validation to prevent NaN projection errors)
             const loadedLayers = Object.values(regionLayers).filter(layer => {
                 try {
-                    // FIX: We now check "map.hasLayer(layer)" to ensure we only fit coordinates of the active/selected regions!
-                    return layer && map.hasLayer(layer) && typeof layer.getBounds === 'function' && layer.getBounds().isValid();
+                    // Check map.hasLayer AND validate bounds so flyToBounds never crashes
+                    return layer && map.hasLayer(layer) && typeof layer.getBounds === 'function' && isBoundsValid(layer.getBounds());
                 } catch (e) {
                     return false;
                 }
@@ -744,31 +1220,50 @@
             if (loadedLayers.length > 0) {
                 const boundaryGroup = L.featureGroup(loadedLayers);
                 const bounds = boundaryGroup.getBounds();
-                if (bounds && typeof bounds.isValid === 'function' && bounds.isValid()) {
+                
+                // CRITICAL BUGFIX: Recalculate container dimensions immediately and ensure size is valid (>0)
+                // before centering, completely eliminating the division-by-zero NaN coordinate zoom crash.
+                map.invalidateSize();
+                const mapSize = map.getSize();
+                if (mapSize.x > 0 && mapSize.y > 0 && isBoundsValid(bounds)) {
                     map.flyToBounds(bounds, {
-                        padding: [40, 40],
+                        // Offset horizontal padding dynamically to account for our unified 300px sidebar overlay!
+                        paddingTopLeft: [40, 40],
+                        paddingBottomRight: [340, 40],
                         duration: 1.8,
                         easeLinearity: 0.25
                     });
                 }
             }
 
+            // Execute initial demographic aggregation once layers render completely
+            updateDemographicsPyramid();
+
             document.querySelectorAll('.group-switch input').forEach(input => input.disabled = false);
             setTimeout(() => {
                 statusPanel.style.opacity = '0';
-                setTimeout(() => statusPanel.style.display = 'none', 500);
+                setTimeout(() => {
+                    statusPanel.style.display = 'none';
+                    expandPyramid(); // Auto-expand demographics panel when status panel collapses
+                }, 500);
             }, 3000);
         }
         
         loadRegionBorders();
 
-        // 3. Points of Interest & Circular Proximity Rings
+        // 3. Points of Interest & Circular Proximity Rings (Rendered inside the POI Layer Group)
         const locations = [
-            { name: "Pantai Indah Kapuk (North Jakarta)", lat: -6.1112, lon: 106.7404, color: "#4C4A4B" },
-            { name: "Daan Mogot", lat: -6.1543, lon: 106.7398, color: "#1C6048", radii: [5000, 10000] }
+            { id: "pik", name: "Pantai Indah Kapuk", desc: "Premium coastal district", lat: -6.1112, lon: 106.7404, color: "#4C4A4B" },
+            { id: "dm", name: "Daan Mogot", desc: "Industrial transit hub", lat: -6.1543, lon: 106.7398, color: "#1C6048", radii: [5000, 10000] },
+            { id: "monas", name: "TB Simatupang", desc: "South Jakarta", lat: -6.293221949027879, lon: 106.81898208001107, color: "#1E2f31" }
         ];
 
+        const poiLayerGroups = {};
+        const poiMasterGroup = L.layerGroup().addTo(map);
+
         locations.forEach(loc => {
+            const singlePoiGroup = L.layerGroup();
+
             if (loc.radii) {
                 loc.radii.sort((a, b) => b - a).forEach((radius, index) => {
                     const isOuter = index === 0; 
@@ -777,16 +1272,103 @@
                         dashArray: isOuter ? '4, 8' : '6, 6', fillColor: '#9B8B70',
                         fillOpacity: isOuter ? 0.3 : 0.35, interactive: false, pane: 'ringsPane',
                         className: isOuter ? 'breathe-outer' : 'breathe-inner'
-                    }).addTo(map);
+                    }).addTo(singlePoiGroup);
                 });
             }
 
             const marker = L.circleMarker([loc.lat, loc.lon], {
                 radius: 8, fillColor: loc.color, color: '#EFEBE7', weight: 2,
                 opacity: 1, fillOpacity: 0.9, pane: 'markersPane'
-            }).addTo(map);
+            }).addTo(singlePoiGroup);
 
-            marker.bindTooltip(`<b>${loc.name}</b>`, { direction: 'top', offset: [0, -10], className: 'custom-tooltip' });
+            marker.bindTooltip(`<b>${loc.name}</b><br><span style="font-size:11px;color:#777;">${loc.desc}</span>`, { direction: 'top', offset: [0, -10], className: 'custom-tooltip' });
+
+            // Attach layers to both master and private handles
+            singlePoiGroup.addTo(poiMasterGroup);
+            poiLayerGroups[loc.id] = singlePoiGroup;
+
+            // Generate HTML POI Panel UI Row
+            const poiItem = document.createElement('div');
+            poiItem.className = 'poi-item';
+
+            const titleContainer = document.createElement('div');
+            titleContainer.className = 'poi-title-container';
+            titleContainer.innerHTML = `<span style="font-weight: 600;">${loc.name}</span><span class="poi-desc">${loc.desc}</span>`;
+            
+            // Camera Fly-To Click Event on the POI text
+            titleContainer.addEventListener('click', () => {
+                map.flyTo([loc.lat, loc.lon], 13.5, {
+                    duration: 1.5,
+                    easeLinearity: 0.25
+                });
+            });
+
+            const toggleLabel = document.createElement('label');
+            toggleLabel.className = 'switch item-switch';
+
+            const toggleInput = document.createElement('input');
+            toggleInput.type = 'checkbox';
+            toggleInput.id = `toggle-poi-${loc.id}`;
+            toggleInput.checked = true;
+
+            toggleInput.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    poiMasterGroup.addLayer(poiLayerGroups[loc.id]);
+                } else {
+                    poiMasterGroup.removeLayer(poiLayerGroups[loc.id]);
+                }
+
+                // Synchronize Master Toggle Switch state
+                const allChecked = Object.keys(poiLayerGroups).every(id => document.getElementById(`toggle-poi-${id}`).checked);
+                document.getElementById('toggle-all-poi').checked = allChecked;
+            });
+
+            const sliderSpan = document.createElement('span');
+            sliderSpan.className = 'slider';
+
+            toggleLabel.appendChild(toggleInput);
+            toggleLabel.appendChild(sliderSpan);
+            poiItem.appendChild(titleContainer);
+            poiItem.appendChild(toggleLabel);
+            document.getElementById('poi-list').appendChild(poiItem);
+        });
+
+        // Event listener klik header POI yang menerapkan logika Accordion
+        document.getElementById('poi-header-title').addEventListener('click', function() {
+            const svg = this.querySelector('.chevron');
+            const content = document.getElementById('poi-list');
+            if (content.style.display === 'none') {
+                // Membuka POI -> Melipat Piramida
+                content.style.display = 'block';
+                svg.classList.remove('collapsed');
+                collapsePyramid();
+            } else {
+                // Melipat POI
+                content.style.display = 'none';
+                svg.classList.add('collapsed');
+            }
+        });
+
+        // Global/Master POI Toggle Switch Event Listener
+        document.getElementById('toggle-all-poi').addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            Object.keys(poiLayerGroups).forEach(id => {
+                const itemCheckbox = document.getElementById(`toggle-poi-${id}`);
+                if (itemCheckbox.checked !== isChecked) {
+                    itemCheckbox.checked = isChecked;
+                    if (isChecked) {
+                        poiMasterGroup.addLayer(poiLayerGroups[id]);
+                    } else {
+                        poiMasterGroup.removeLayer(poiLayerGroups[id]);
+                    }
+                }
+            });
+            
+            if (isChecked) {
+                map.addLayer(poiMasterGroup);
+            } else {
+                map.removeLayer(poiMasterGroup);
+            }
         });
 
         // 5. Custom Measurement Tool Logic
